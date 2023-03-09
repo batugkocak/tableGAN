@@ -123,12 +123,12 @@ def main(_):
     print(FLAGS.y_dim)
 
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
-    run_config = tf.ConfigProto()
+    run_config = tf.compat.v1.ConfigProto()
     run_config.gpu_options.allow_growth = True
 
     print("Chekcpoint : " + FLAGS.checkpoint_dir)
 
-    with tf.Session(config=run_config) as sess:
+    with tf.compat.v1.Session(config=run_config) as sess:
         tablegan = TableGan(
             sess,
             input_width=FLAGS.input_width,
@@ -176,4 +176,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

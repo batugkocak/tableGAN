@@ -113,10 +113,10 @@ class TableGan(object):
 
     def build_model(self):
 
-        self.y = tf.placeholder(
+        self.y = tf.compat.v1.placeholder(
             tf.float32, [self.batch_size, self.y_dim], name='y')
 
-        self.y_normal = tf.placeholder(
+        self.y_normal = tf.compat.v1.placeholder(
             tf.int16, [self.batch_size, 1], name='y_normal')
 
         # if self.crop:
@@ -125,15 +125,15 @@ class TableGan(object):
         #     image_dims = [self.input_height, self.input_width, self.c_dim]
 
         data_dims = [self.input_height, self.input_width, self.c_dim]
-        self.inputs = tf.placeholder(
+        self.inputs = tf.compat.v1.placeholder(
             tf.float32, [self.batch_size] + data_dims, name='inputs')
 
-        self.sample_inputs = tf.placeholder(
+        self.sample_inputs = tf.compat.v1.placeholder(
             tf.float32, [self.sample_num] + data_dims, name='sample_inputs')
 
         inputs = self.inputs
 
-        self.z = tf.placeholder(
+        self.z = tf.compat.v1.placeholder(
             tf.float32, [None, self.z_dim], name='z')
 
         self.z_sum = histogram_summary("z", self.z)
@@ -225,16 +225,16 @@ class TableGan(object):
         print("Feature Size = %s" % (self.D_features_mean.get_shape()[-1]))
 
         # Previous Global Mean for real Data
-        self.prev_gmean = tf.placeholder(tf.float32, [1, dim], name='prev_gmean')
+        self.prev_gmean = tf.compat.v1.placeholder(tf.float32, [1, dim], name='prev_gmean')
 
         # Previous Global Mean  for fake Data
-        self.prev_gmean_ = tf.placeholder(tf.float32, [1, dim], name='prev_gmean_')
+        self.prev_gmean_ = tf.compat.v1.placeholder(tf.float32, [1, dim], name='prev_gmean_')
 
         # Previous Global Variance for real Data
-        self.prev_gvar = tf.placeholder(tf.float32, [1, dim], name='prev_gvar')
+        self.prev_gvar = tf.compat.v1.placeholder(tf.float32, [1, dim], name='prev_gvar')
 
         # Previous Global Variance for fake Data
-        self.prev_gvar_ = tf.placeholder(tf.float32, [1, dim], name='prev_gvar_')
+        self.prev_gvar_ = tf.compat.v1.placeholder(tf.float32, [1, dim], name='prev_gvar_')
 
         # Moving Average Contributions
         mac = 0.99
@@ -261,7 +261,7 @@ class TableGan(object):
 
         self.d_loss_sum = scalar_summary("d_loss", self.d_loss)
 
-        t_vars = tf.trainable_variables()
+        t_vars = tf.compat.v1.trainable_variables()
 
         self.d_vars = [var for var in t_vars if 'd_' in var.name]
         self.g_vars = [var for var in t_vars if 'g_' in var.name]
@@ -272,24 +272,25 @@ class TableGan(object):
             self.c_loss_sum = scalar_summary("c_loss", self.c_loss)
             self.c_vars = [var for var in t_vars if 'c_' in var.name]
 
-        self.saver = tf.train.Saver()
+        self.saver = tf.compat.v1.train.Saver()
 
-    def train(self, config, experiment):
+    #def train(self, config, experiment):
+    def train(self, config):
         print("Start Training...\n")
 
-        d_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
+        d_optim = tf.compat.v1.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
             .minimize(self.d_loss, var_list=self.d_vars)
 
         # Classifier
         if self.y_dim:
-            c_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
+            c_optim = tf.compat.v1.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
                 .minimize(self.c_loss, var_list=self.c_vars)
 
-        g_optim = tf.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
+        g_optim = tf.compat.v1.train.AdamOptimizer(config.learning_rate, beta1=config.beta1) \
             .minimize(self.g_loss, var_list=self.g_vars)
 
         try:
-            tf.global_variables_initializer().run()
+            tf.compat.v1.global_variables_initializer().run()
         except:
             tf.initialize_all_variables().run()
 
@@ -514,10 +515,10 @@ class TableGan(object):
                     })
 
                 counter += 1
-                experiment.log_metric("d_loss", errD_fake + errD_real, step=idx)
-                experiment.log_metric("g_loss", errG, step=idx)
+                #experiment.log_metric("d_loss", errD_fake + errD_real, step=idx)
+                #experiment.log_metric("g_loss", errG, step=idx)
                 if self.y_dim:
-                    experiment.log_metric("c_loss", errC, step=idx)
+                    #experiment.log_metric("c_loss", errC, step=idx)
                     print("Dataset: [%s] -> [%s] -> Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: %.8f, g_loss: %.8f, "
                           "c_loss: %.8f" % (config.dataset, config.test_id, epoch, idx, batch_idxs,
                                             time.time() - start_time, errD_fake + errD_real, errG, errC))
@@ -566,7 +567,7 @@ class TableGan(object):
                     self.save(config.checkpoint_dir, counter)
 
     def discriminator(self, image, y=None, reuse=False):
-        with tf.variable_scope("discriminator") as scope:
+        with tf.compat.v1.variable_scope("discriminator") as scope:
             if reuse:
                 scope.reuse_variables()
             print(not self.y_dim)
@@ -616,7 +617,7 @@ class TableGan(object):
                 return tf.nn.sigmoid(h3), h3, h1  # new D
 
     def sampler_discriminator(self, input, y=None):
-        with tf.variable_scope("discriminator") as scope:
+        with tf.compat.v1.variable_scope("discriminator") as scope:
 
             scope.reuse_variables()
 
@@ -661,7 +662,7 @@ class TableGan(object):
     # Classifier
     def classification(self, image, y, reuse=False):
 
-        with tf.variable_scope("classification") as scope:
+        with tf.compat.v1.variable_scope("classification") as scope:
             if reuse:
                 scope.reuse_variables()
             assert (y is not None)
@@ -687,7 +688,7 @@ class TableGan(object):
 
     def generator(self, z, y=None):
         # Add
-        with tf.variable_scope("generator") as scope:
+        with tf.compat.v1.variable_scope("generator") as scope:
 
             s_h, s_w = self.output_height, self.output_width
 
@@ -742,7 +743,7 @@ class TableGan(object):
             return tf.nn.tanh(h4)
 
     def sampler(self, z, y=None):
-        with tf.variable_scope("generator") as scope:
+        with tf.compat.v1.variable_scope("generator") as scope:
 
             scope.reuse_variables()
 
@@ -816,7 +817,7 @@ class TableGan(object):
 
         if os.path.exists(self.train_data_path + ".csv"):
 
-            X = pd.read_csv(self.train_data_path + ".csv", sep=';')
+            X = pd.read_csv(self.train_data_path + ".csv")
             print("Loading CSV input file : %s" % (self.train_data_path + ".csv"))
 
             self.attrib_num = X.shape[1]
