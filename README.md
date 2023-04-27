@@ -106,3 +106,7 @@ For example, results of table "Adult" with settings of TEST_ID=OI_11_00:
 ## Docker command to run the tensorflow image:
 winpty docker run -it --rm -v "C:\\Users\\stavg\\Documents\\DLPadmin\\":/tf/notebooks \
 -p 8888:8888 tensorflow/tensorflow:1.15.5-jupyter
+
+## Maurice's edits
+sudo docker run -it --rm -v "/home/maurice/tableGAN/":/tf/notebooks \
+-p 8888:8888 tensorflow/tensorflow:1.15.5-jupyter
