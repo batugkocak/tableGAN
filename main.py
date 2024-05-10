@@ -13,7 +13,7 @@ from model import TableGan
 
 from utils import pp, generate_data, show_all_variables
 
-flags = tf.app.flags
+flags = tf.compat.v1.app.flags
 
 flags.DEFINE_integer("epoch", 10, "Epoch to train [25]")
 

@@ -185,7 +185,7 @@ class TableGan(object):
             except:
                 return tf.nn.sigmoid_cross_entropy_with_logits(logits=x, targets=y)
 
-        y_normal = tf.to_float(self.y_normal)
+        y_normal = tf.cast(self.y_normal, dtype=tf.float32)
 
         self.d_loss_real = tf.reduce_mean(
             sigmoid_cross_entropy_with_logits(self.D_logits, tf.ones_like(self.D)))
@@ -210,13 +210,13 @@ class TableGan(object):
             sigmoid_cross_entropy_with_logits(self.D_logits_, tf.ones_like(self.D_)))
 
         # Loss function for Information Loss
-        self.D_features_mean = tf.reduce_mean(self.D_features, axis=0, keep_dims=True)
-        self.D_features_mean_ = tf.reduce_mean(self.D_features_, axis=0, keep_dims=True)
+        self.D_features_mean = tf.reduce_mean(self.D_features, axis=0, keepdims=True)
+        self.D_features_mean_ = tf.reduce_mean(self.D_features_, axis=0, keepdims=True)
 
-        self.D_features_var = tf.reduce_mean(tf.square(self.D_features - self.D_features_mean), axis=0, keep_dims=True)
+        self.D_features_var = tf.reduce_mean(tf.square(self.D_features - self.D_features_mean), axis=0, keepdims=True)
 
         self.D_features_var_ = tf.reduce_mean(tf.square(self.D_features_ - self.D_features_mean_), axis=0,
-                                              keep_dims=True)
+                                              keepdims=True)
 
         dim = self.D_features_mean.get_shape()[-1]
 
@@ -292,7 +292,7 @@ class TableGan(object):
         try:
             tf.compat.v1.global_variables_initializer().run()
         except:
-            tf.initialize_all_variables().run()
+            tf.compat.v1.initialize_all_variables().run()
 
         self.g_sum = merge_summary([self.z_sum, self.d__sum,
                                     self.G_sum, self.g_loss_sum])
@@ -855,7 +855,7 @@ class TableGan(object):
 
         if self.y_dim:
             y = y.reshape(y.shape[0], -1).astype(np.int16)
-            y_onehot = np.zeros((len(y), classes), dtype=np.float)
+            y_onehot = np.zeros((len(y), classes), dtype=float)
             for i, lbl in enumerate(y):
                 y_onehot[i, y[i]] = 1.0
             return X, y_onehot, y
